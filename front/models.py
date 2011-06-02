@@ -12,6 +12,26 @@ from django.utils.encoding import force_unicode, smart_unicode
 from django.contrib.localflavor.us.forms import phone_digits_re
 from django.contrib.localflavor.us.models import PhoneNumberField
 
+DEFAULT_COLOR = '#EEEEEE'
+RED = '#EE3333'
+GREEN = '#33EE33'
+BLUE = '#3333EE'
+
+class ColorManager(models.Manager):
+	@property
+	def current(self):
+		if len(self.all()) == 0: return self.create()
+		return self.all()[0]
+
+class Color(models.Model):
+	hex_code = models.CharField(max_length=10, default=DEFAULT_COLOR)
+
+	objects = ColorManager()
+	
+	def __unicode__(self): return self.hex_code
+	class Meta:
+		ordering = ['-id']
+
 def clean_us_phone_number(number):
 	number = ''.join([c for c in number if c.isdigit() or c == '+'])
 	if number.startswith('+'): number = number[1:]

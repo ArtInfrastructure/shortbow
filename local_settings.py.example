@@ -1,0 +1,31 @@
+
+PRODUCTION = False
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+ADMINS = (
+    ('Trevor F. Smith', 'trevor@trevor.smith.name'),
+)
+MANAGERS = ADMINS
+
+SECRET_KEY = 'secret' # add a unique string here for internal Django use
+
+TWILIO_PHONE_NUMBER = '(206) 555-1212'
+TWILIO_ACCOUNT_GUID = 'guid' # add your account GUID here
+TWILIO_AUTH_TOKEN = 'auth token' # add your auth token here
+REQUIRE_TWILIO_AUTH = True
+
+DATABASES = {
+    'default': {
+		'ENGINE':'django.db.backends.postgresql_psycopg2',
+		'USER':'postgres',
+		'NAME':'shortbow',
+		'PASSWORD':'1234',
+		'HOST':'localhost',
+    }
+}
+
+TIME_ZONE = 'America/Chicago'
+LANGUAGE_CODE = 'en-us'
+
+

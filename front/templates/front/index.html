@@ -1,5 +1,31 @@
 {% extends "front/base.html"%}
 
+{% block sub-head %}
+<style>
+body { background-color: {{ color.hex_code }}; }
+#content h1 { text-align: center; margin-top: 4em; }
+</style>
+<script>
+$(document).ready(function(){
+	checkColor();
+});
+
+function checkColor(){
+	$.ajax({
+		url: "{% url front.api_views.current_color %}",
+		complete: function(xhr, status){
+			if(status == 'success'){
+				$('body').css('background-color', xhr.responseText);
+			} else {
+				console.log("Could not connect to the current color", xhr, status);
+			}
+			setTimeout('checkColor();', 5000);
+		}
+	});
+}
+</script>
+{% endblock %}
+
 {% block content %}
-<h1>Howdy</h1>
+<h1>Call {{ phone_number }} to change this page.</h1>
 {% endblock %}

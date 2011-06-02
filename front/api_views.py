@@ -18,7 +18,7 @@ from django.http import HttpResponse, Http404, HttpResponseServerError, HttpResp
 
 import twilio
 
-from models import PhoneCall, Phone
+from models import PhoneCall, Phone, Color, RED, GREEN, BLUE, DEFAULT_COLOR
 
 VOICE = twilio.Say.WOMAN
 LANGUAGE = twilio.Say.ENGLISH
@@ -29,6 +29,9 @@ def say(message):
 	return result
 	
 def quick_say(message): return str(say(message))
+
+def full_reverse(view_name, args=None, kwargs=None):
+	return 'http://%s%s' % (Site.objects.get_current().domain, reverse(view_name, args, kwargs))	
 
 def twilio_request(function):
 	"""Decorate the request object with an incoming_phone and call attributes"""
@@ -55,6 +58,35 @@ def twilio_request(function):
 @csrf_exempt
 @twilio_request
 def intro(request):
-	"""The view called when a phone call arrives at Twilio"""
-	logging.debug("%s called %s" % (request.REQUEST.get('Caller', None), request.REQUEST.get('Called', None)))
-	return HttpResponse(quick_say('Hey, this is working.'))
+	"""The view called when a phone call arrives from Twilio"""
+
+	# Create a twilio response object with the welcome message
+	result = say('Welcome.  Please press one for red, two for green, or three for blue.')
+
+	# Ask Twilio to wait for a single DTMF keypress
+	result.append(twilio.Gather(numDigits=1, action=full_reverse('front.api_views.color_code')))
+
+	return HttpResponse(str(result))
+
+@csrf_exempt
+@twilio_request
+def color_code(request):
+	"""The view called when the user presses a number."""
+
+	digits = request.REQUEST.get('Digits', None)
+	if not digits: return HttpResponseRedirect(reverse('front.api_views.intro'))
+	code = int(digits)
+	if code < 1 or code > 3: return HttpResponseRedirect(reverse('front.api_views.intro'))
+
+	current = Color.objects.current
+	if code == 1:
+		current.hex_code = RED
+	elif code == 2:
+		current.hex_code = GREEN
+	elif code == 3:
+		current.hex_code = BLUE
+	current.save()
+	
+	return HttpResponse(quick_say('Thank you for your color choice.'))
+
+def current_color(request): return HttpResponse(Color.objects.current.hex_code)
